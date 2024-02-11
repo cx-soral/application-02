@@ -1,0 +1,37 @@
+name: Github - mirroring - GCP - Tags
+
+on:
+  workflow_run:
+    workflows: ["Github - mirroring - GCP - Prd"]
+    branches: [main]
+    types:
+      - completed
+
+jobs:
+  check_tag:
+    runs-on: ubuntu-latest
+    outputs:
+      is_tag: ${{ steps.tag_check.outputs.is_tag }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Check for Tag
+        id: tag_check
+        run: |
+          TAG_NAME=$(git tag --points-at ${{ github.event.workflow_run.head_commit.id }} | head -n 1)
+          if [[ -z "$TAG_NAME" ]]; then
+            echo "This is not a tag push."
+            echo "::set-output name=is_tag::false"
+          else
+            echo "This workflow was triggered by a tag: $TAG_NAME"
+            echo "::set-output name=is_tag::true"
+          fi
+
+  deploy:
+    needs: check_tag
+    if: needs.check_tag.outputs.is_tag == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Deploy Project
+        run: echo "Deploying because this was triggered by a tag."
