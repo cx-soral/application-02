@@ -43,11 +43,22 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - id: 'auth'
-      name: 'Authenticate to Google Cloud'
-      uses: 'google-github-actions/auth@v2'
+    - id: auth
+      name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
       with:
         project_id: ${{ secrets.PROJECT_ID }}
         workload_identity_provider: ${{ secrets.SECRET_WIP_NAME }}
         service_account: ${{ secrets.PROVIDER_SA_EMAIL }}
 
+    - name: Tagging remote repository
+      run: |
+        gcloud config set account '${{ secrets.PROVIDER_SA_EMAIL }}'
+        gcloud info
+        git config --global credential.https://source.developers.google.com.helper gcloud.sh
+        mkdir ../target && cd ../target
+        git clone https://source.developers.google.com/p/${{ secrets.PROJECT_ID }}/r/${GITHUB_REPOSITORY#*/}
+        cd ${GITHUB_REPOSITORY#*/}
+        git checkout main
+        git tag ${{ needs.check_tag.outputs.tag_name }}
+        git push origin ${{ needs.check_tag.outputs.tag_name }}
