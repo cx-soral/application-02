@@ -16,8 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
-          fetch-depth: '20'
-          fetch-tags: true
+          fetch-depth: 0
       - name: Check for Tag
         id: tag_check
         run: |
