@@ -1,2 +1,2 @@
-# gcp-framework
-GCP Framework
+# GCP Framework Example 02
+GCP Framework Example 02
