@@ -14,9 +14,10 @@ jobs:
       is_tag: ${{ steps.tag_check.outputs.is_tag }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 20
+          fetch-tags: true
       - name: Check for Tag
         id: tag_check
         run: |
@@ -27,13 +28,26 @@ jobs:
           else
             echo "This workflow was triggered by a tag: $TAG_NAME"
             echo "::set-output name=is_tag::true"
+            echo "::set-output name=tag_name::$TAG_NAME"
           fi
 
-  deploy:
+  tagging_remote:
     needs: check_tag
     if: needs.check_tag.outputs.is_tag == 'true'
     runs-on: ubuntu-latest
+    environment: prd
+    permissions:
+      contents: read
+      id-token: write
     steps:
-      - uses: actions/checkout@v2
-      - name: Deploy Project
-        run: echo "Deploying because this was triggered by a tag."
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - id: 'auth'
+      name: 'Authenticate to Google Cloud'
+      uses: 'google-github-actions/auth@v2'
+      with:
+        project_id: ${{ secrets.PROJECT_ID }}
+        workload_identity_provider: ${{ secrets.SECRET_WIP_NAME }}
+        service_account: ${{ secrets.PROVIDER_SA_EMAIL }}
+
