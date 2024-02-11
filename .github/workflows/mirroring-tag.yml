@@ -20,6 +20,7 @@ jobs:
       - name: Check for Tag
         id: tag_check
         run: |
+          git show-ref --tags
           TAG_NAME=$(git tag --points-at ${{ github.event.workflow_run.head_commit.id }} | head -n 1)
           if [[ -z "$TAG_NAME" ]]; then
             echo "This is not a tag push."
