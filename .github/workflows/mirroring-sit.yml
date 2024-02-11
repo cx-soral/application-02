@@ -43,18 +43,9 @@ jobs:
         rm -rf *
         cp -r ../../source/* .
         git add .
-
-    - name: Check for changes
-      id: check_changes
-      run: |
-        if [[ -n $(git status --porcelain) ]]; then
-          echo "::set-output name=changes::true"
+        git commit -m "${{ github.event.head_commit.message }}" || COMMIT_FAILED=true
+        if [ "$COMMIT_FAILED" != true ]; then
+          git push -u origin main
         else
-          echo "::set-output name=changes::false"
+          echo "Commit failed, skipping push."
         fi
-
-    - name: Commit and Push if changes are present
-      if: steps.check_changes.outputs.changes == 'true'
-      run: |
-        git commit -m "${{ github.event.head_commit.message }}"
-        git push -u origin main
