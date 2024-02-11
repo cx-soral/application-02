@@ -1,11 +1,14 @@
-name: Github - mirroring - GCP
+name: Github - mirroring - GCP - Sit
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   mirroring:
     runs-on: ubuntu-latest
+    environment: sit
     permissions:
       contents: read
       id-token: write
